@@ -139,6 +139,20 @@ def dashboard():
         )
         st.plotly_chart(fig_tmo)
 
+        # Gráfico de ranking dinâmico
+        st.subheader("Ranking Dinâmico")
+        df_ranking = df_total.groupby('Usuário').agg(
+            Andamento=('Status', lambda x: x[x == 'ANDAMENTO_PRE'].count()),
+            Finalizado=('Status', lambda x: x[x == 'FINALIZADO'].count()),
+            Reclassificado=('Status', lambda x: x[x == 'RECLASSIFICADO'].count())
+        ).reset_index()
+        df_ranking['Total'] = df_ranking['Andamento'] + df_ranking['Finalizado'] + df_ranking['Reclassificado']
+        df_ranking = df_ranking.sort_values(by='Total', ascending=False).reset_index(drop=True)
+        df_ranking.index += 1
+        df_ranking.index.name = 'Rank'
+        df_ranking = df_ranking.rename(columns={'Usuário': 'Usuário', 'Andamento': 'Andamento', 'Finalizado': 'Finalizado', 'Reclassificado': 'Reclassificado'})
+        st.dataframe(df_ranking.style.format({'Andamento': '{:.0f}', 'Finalizado': '{:.0f}', 'Reclassificado': '{:.0f}'}), width=1000)
+
     elif opcao_selecionada == "Diário de Bordo":
         diario()
 
